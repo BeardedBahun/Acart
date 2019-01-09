@@ -6,11 +6,16 @@ from django.contrib.auth.models import User
 
 
 class Category(models.Model):
-    category = models.CharField(max_length=50)
     title = models.CharField(max_length=70)
     slug = AutoSlugField(populate_from='title', unique=True)
     image = ImageField()
     description = RichTextField()
+
+    class Meta:
+        verbose_name_plural = 'Categories'
+
+    def __str__(self):
+        return self.title
 
 
 class Product(models.Model):
@@ -20,6 +25,9 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=9999999999, decimal_places=2)
     brand = models.CharField(max_length=70)
     discount = models.BooleanField()
+
+    def __str__(self):
+        return self.title
 
 
 class ProductHasImage(models.Model):
@@ -34,14 +42,25 @@ class ProductReview(models.Model):
     comment = models.TextField()
     pub_date = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.title
+
+
+
 
 class WishList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     pub_date = models.DateTimeField()
 
+    def __str__(self):
+        return self.title
+
 
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     qty = models.IntegerField()
+
+    def __str__(self):
+        return self.title
