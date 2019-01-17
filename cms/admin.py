@@ -1,7 +1,9 @@
 from django.contrib import admin
 
-from cms.models import Banner, Page
+from .models import Banner, Page, Brand
 
 admin.site.register(Banner)
 
 admin.site.register(Page)
+
+admin.site.register(Brand)

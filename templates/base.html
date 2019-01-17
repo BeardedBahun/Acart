@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <!--
 	ustora by freshdesignweb.com
@@ -44,42 +45,29 @@
             <div class="col-md-8">
                 <div class="user-menu">
                     <ul>
-                        <li><a href="#"><i class="fa fa-user"></i> My Account</a></li>
-                        <li><a href="#"><i class="fa fa-heart"></i> Wishlist</a></li>
-                        <li><a href="cart.html"><i class="fa fa-user"></i> My Cart</a></li>
-                        <li><a href="checkout.html"><i class="fa fa-user"></i> Checkout</a></li>
-                        <li><a href="#"><i class="fa fa-user"></i> Login</a></li>
+
+                        {% if request.user.is_authenticated %}
+                            <li><a href="#"><i class="fa fa-user"></i> My Account</a></li>
+                            <li><a href="#"><i class="fa fa-heart"></i> Wishlist</a></li>
+                            <li><a href="{% url 'ecommerce:cart' %}cart.html"><i class="fa fa-user"></i> My Cart</a>
+                            </li>
+
+
+                            <li><a href="{% url 'logout' %}"><i class="fa fa-user"></i> Logout</a></li>
+                            {# here url 'logout' is from#}
+                            {# django.contrib.auth.urls that we have included in main urls. check django views authentication documentation #}
+                        {% else %}
+                            <li><a href="{% url 'ecommerce:register' %}"><i class="fa fa-user"></i> Signup</a></li>
+                            {# since we don't have any methods or urls for signup in django.contrib.auth.urls, we created our own method and urls#}
+                            <li><a href="{% url 'login' %}"><i class="fa fa-user"></i> Login</a></li>
+                            {# django.contrib.auth.urls that we have included in main urls. #}
+                        {% endif %}
+
                     </ul>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="header-right">
-                    <ul class="list-unstyled list-inline">
-                        <li class="dropdown dropdown-small">
-                            <a data-toggle="dropdown" data-hover="dropdown" class="dropdown-toggle" href="#"><span
-                                    class="key">currency :</span><span class="value">USD </span><b
-                                    class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#">USD</a></li>
-                                <li><a href="#">INR</a></li>
-                                <li><a href="#">GBP</a></li>
-                            </ul>
-                        </li>
 
-                        <li class="dropdown dropdown-small">
-                            <a data-toggle="dropdown" data-hover="dropdown" class="dropdown-toggle" href="#"><span
-                                    class="key">language :</span><span class="value">English </span><b
-                                    class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#">English</a></li>
-                                <li><a href="#">French</a></li>
-                                <li><a href="#">German</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
         </div>
     </div>
 </div> <!-- End header area -->
@@ -89,13 +77,14 @@
         <div class="row">
             <div class="col-sm-6">
                 <div class="logo">
-                    <h1><a href="./"><img src="img/logo.png"></a></h1>
+                    <h1><a href="/"><img src="{% static 'img/logo.png' %}"></a></h1>
                 </div>
             </div>
 
             <div class="col-sm-6">
                 <div class="shopping-item">
-                    <a href="cart.html">Cart - <span class="cart-amunt">$100</span> <i class="fa fa-shopping-cart"></i>
+                    <a href="cart.html">Cart - <span class="cart-amunt">Rs. {{ cart.total }}</span> <i
+                            class="fa fa-shopping-cart"></i>
                         <span class="product-count">5</span></a>
                 </div>
             </div>
@@ -116,15 +105,44 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="index.html">Home</a></li>
-                    {% for category in categories %}
-                        <li><a href="shop.html">{{ category.title }}</a></li>
+                    <li {% if request.path == '/' %}class="active" {% endif %}><a href="/">Home</a></li>
+                    {# we need to give url / for home alway not blank space or nothing #}
+                    {# here we are including home even though we don't have home category, therefore outside of our category loop #}
+                    {# here we give / in href to make home page clickable#}
+                    {% for a_category in categories %}
+                        {# loop ma vako category ra context bata aako category judxa tei vayere, a_category banako #}
+                        <li{% if  '/category/' in request.path and a_category == category %}{#
+                            here category is from our model ie Category class object  #}
+                            class="active" {% endif %}><a
+                                href="{% url 'ecommerce:category_wise' a_category.slug %}">{{ a_category.title }}</a>{# remember always from our model class slug and title #}
+                        </li>
+                    {% endfor %}
+
+
+                    {% for a_page in navbar_pages %}{# this is for about us contact us #}
+
+                        <li {% if  '/cms/pages/' in request.path and a_page == page %}
+                            class="active" {% endif %}><a
+                                href="{% url 'cms:page' a_page.slug %}">{{ a_page.menu_title }}</a>
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
     </div>
 </div> <!-- End mainmenu area -->
+
+
+<div class="container">
+    {% if request.session.show_ad %}
+        <h2 style="text-align: center">I am AD</h2>
+        <form action="{% url 'ecommerce:close_ad' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="floatright">X</button>
+        </form>
+    {% endif %}
+
+</div>
 
 {% block content %}
 {% endblock %}
@@ -166,11 +184,10 @@
                 <div class="footer-menu">
                     <h2 class="footer-wid-title">Categories</h2>
                     <ul>
-                        <li><a href="#">Mobile Phone</a></li>
-                        <li><a href="#">Home accesseries</a></li>
-                        <li><a href="#">LED TV</a></li>
-                        <li><a href="#">Computer</a></li>
-                        <li><a href="#">Gadets</a></li>
+                        {% for a_category in categories %}
+                            <li><a href="#">{{ a_category.title }}</a></li>
+                        {% endfor %}
+
                     </ul>
                 </div>
             </div>

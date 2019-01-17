@@ -10,10 +10,7 @@
                 <div class="col-md-4">
                     <div class="single-sidebar">
                         <h2 class="sidebar-title">Search Products</h2>
-                        <form action="{% url 'ecommerce:search' %}">
-                            <input type="text" name="q" placeholder="Search products..." required>
-                            <input type="submit" value="Search">
-                        </form>
+                        {% include 'partials/search.html' %}
                     </div>
 
                     <div class="single-sidebar">
@@ -48,7 +45,9 @@
                             <div class="col-sm-6">
                                 <div class="product-images">
                                     <div class="product-main-img">
-                                        {% thumbnail product.image.image "195x243" crop="center" as im %}
+                                        {% thumbnail product.image.image "195x243" crop="center" as im %}{#
+                                             product class ko image function ko producthasimage_Set ko image  #}
+                                            {# this is copied from djanog sorl thumbiail documentation eg simple #}{# also don't forget image.image from our model class producthasimage from our context #}
                                             <img src="{{ im.url }}">
                                         {% endthumbnail %}
                                     </div>
@@ -72,10 +71,12 @@
 
                                     <form action="{% url 'ecommerce:cart' %}" class="cart" method="POST">
                                         {% csrf_token %}
-                                        <input type="hidden" name="product_id" value="{{ product.id }}">{# to identify which product have been selected #}
+                                        <input type="hidden" name="product_id"
+                                               value="{{ product.id }}">{# to identify which product have been selected #}
                                         <div class="quantity">
                                             <input type="number" size="4" class="input-text qty text" title="Qty"
-                                                   value="1" name="qty" min="1" step="1" required>{# name=qty and required #}
+                                                   value="1" name="qty" min="1" step="1"
+                                                   required>{# name=qty and required #}
                                         </div>
                                         <button class="add_to_cart_button" type="submit">Add to cart</button>
                                     </form>
@@ -99,28 +100,38 @@
                                             </div>
                                             <div role="tabpanel" class="tab-pane fade" id="profile">
                                                 <h2>Reviews</h2>
-                                                <div class="submit-review">
-                                                    <p><label for="name">Name</label> <input name="name" type="text">
-                                                    </p>
-                                                    <p><label for="email">Email</label> <input name="email"
-                                                                                               type="email"></p>
-                                                    <div class="rating-chooser">
-                                                        <p>Your rating</p>
 
-                                                        <div class="rating-wrap-post">
-                                                            <i class="fa fa-star"></i>
-                                                            <i class="fa fa-star"></i>
-                                                            <i class="fa fa-star"></i>
-                                                            <i class="fa fa-star"></i>
-                                                            <i class="fa fa-star"></i>
+                                                {% if request.user.is_authenticated %}
+                                                    <form method="post">
+                                                    {% csrf_token %}
+                                                        <div class="submit-review">
+                                                            {#                                                    <p><label for="name">Name</label> <input name="name" type="text">#}
+                                                            {#                                                    </p>#}
+                                                            {#                                                    <p><label for="email">Email</label> <input name="email"#}
+                                                            {#                                                                                               type="email"></p>#}
+                                                            <div class="rating-chooser">
+                                                                <p>Your rating</p>
+
+                                                                {#                                                        <div class="rating-wrap-post">#}
+                                                                {#                                                            <i class="fa fa-star"></i>#}
+                                                                {#                                                            <i class="fa fa-star"></i>#}
+                                                                {#                                                            <i class="fa fa-star"></i>#}
+                                                                {#                                                            <i class="fa fa-star"></i>#}
+                                                                {#                                                            <i class="fa fa-star"></i>#}
+                                                                {#                                                        </div>#}
+                                                                <input name="rating" max="5" style="width: 50px"
+                                                                       type="number" required>
+
+                                                            </div>
+                                                            <p><label for="review">Your review</label> <textarea
+                                                                    name="comment"
+                                                                    id="" cols="30"
+                                                                    rows="10" required></textarea>
+                                                            </p>
+                                                            <p><input type="submit" value="Submit"></p>
                                                         </div>
-                                                    </div>
-                                                    <p><label for="review">Your review</label> <textarea name="review"
-                                                                                                         id="" cols="30"
-                                                                                                         rows="10"></textarea>
-                                                    </p>
-                                                    <p><input type="submit" value="Submit"></p>
-                                                </div>
+                                                    </form>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
